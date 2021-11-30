@@ -7,8 +7,6 @@
   const callButton = document.querySelector("button#call");
   const hangupButton = document.querySelector("button#hangup");
 
-  const cryptoKey = document.querySelector("#crypto-key");
-  const cryptoOffsetBox = document.querySelector("#crypto-offset");
   const banner = document.querySelector("#banner");
   const muteMiddleBox = document.querySelector("#mute-middlebox");
 
@@ -16,15 +14,10 @@
   callButton.onclick = call;
   hangupButton.onclick = hangup;
 
-  cryptoKey.addEventListener("change", setCryptoKey);
   muteMiddleBox.addEventListener("change", toggleMute);
 
   let startToMiddle;
   let startToEnd;
-
-  let currentCryptoKey;
-  let useCryptoOffset = true;
-  let currentKeyIdentifier = 0;
 
   const frameTypeToCryptoOffset = {
     key: 10,
@@ -32,39 +25,12 @@
     undefined: 1,
   };
 
+  let key = 'ec75109d-bfe2-48';
+  let iv = "KCap6JeLif31Q9xs";
   let localStream;
-  // eslint-disable-next-line no-unused-vars
   let remoteStream;
 
-  let hasEnoughAPIs = !!window.RTCRtpScriptTransform;
-
-  if (!hasEnoughAPIs) {
-    const supportsInsertableStreams =
-      !!RTCRtpSender.prototype.createEncodedStreams;
-
-    let supportsTransferableStreams = false;
-    try {
-      const stream = new ReadableStream();
-      window.postMessage(stream, "*", [stream]);
-      supportsTransferableStreams = true;
-    } catch (e) {
-      console.error("Transferable streams are not supported.");
-    }
-    hasEnoughAPIs = supportsInsertableStreams && supportsTransferableStreams;
-  }
-
-  if (!hasEnoughAPIs) {
-    banner.innerText =
-      "Your browser does not support WebRTC Encoded Transforms. " +
-      "This sample will not work.";
-    if (adapter.browserDetails.browser === "chrome") {
-      banner.innerText +=
-        " Try with Enable experimental Web Platform features enabled from chrome://flags.";
-    }
-    startButton.disabled = true;
-    cryptoKey.disabled = true;
-    cryptoOffsetBox.disabled = true;
-  }
+  let useCryptoOffset = true;
 
   function gotStream(stream) {
     console.log("Received local stream");
@@ -103,7 +69,6 @@
   }
 
   async function encodeFunction(encodedFrame, controller) {
-    if (currentCryptoKey) {
       const view = new DataView(encodedFrame.data);
 
       // Trước khi mã hoá thì cắt ra cái offset thông báo media type đã, đoạn này không được mã hoá, không lỗi mất :3
@@ -116,10 +81,18 @@
         String.fromCharCode(...new Uint8Array(bufferAfterCutOffset))
       );
 
-      const encryptedData = CryptoJS.AES.encrypt(
-        base64String,
-        currentCryptoKey
-      );
+      // Mã hoá AES CBC
+      const encryptedData = CryptoJS.AES.encrypt(base64String, key, {
+        iv: CryptoJS.enc.Utf8.parse(iv),
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7,
+      });
+
+      // const encryptedData = CryptoJS.AES.encrypt(
+      //   base64String,
+      //   currentCryptoKey
+      // );
+
 
       const encryptedArrayBuffer = base64ToArrayBuffer(encryptedData);
 
@@ -139,15 +112,12 @@
       // Thêm encrypt data
       for (let i = 0; i < encryptedArrayBuffer.byteLength; ++i) {
         newView.setInt8(i + cryptoOffset, encryptView.getInt8(i));
-      }
-
       encodedFrame.data = newData;
     }
     controller.enqueue(encodedFrame);
   }
 
   async function decodeFunction(encodedFrame, controller) {
-    if (currentCryptoKey) {
       const view = new DataView(encodedFrame.data);
       const cryptoOffset = useCryptoOffset
         ? frameTypeToCryptoOffset[encodedFrame.type]
@@ -161,10 +131,16 @@
         String.fromCharCode(...new Uint8Array(bufferAfterCutOffset))
       );
 
-      const decryptedData = CryptoJS.AES.decrypt(
-        base64String,
-        currentCryptoKey
-      ).toString(CryptoJS.enc.Utf8);
+      // const decryptedData = CryptoJS.AES.decrypt(
+      //   base64String,
+      //   currentCryptoKey
+      // ).toString(CryptoJS.enc.Utf8);
+
+      const decryptedData = CryptoJS.AES.decrypt(base64String, key, {
+        iv: CryptoJS.enc.Utf8.parse(iv),
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7,
+      }).toString(CryptoJS.enc.Utf8);
 
       const decryptedArrayBuffer = base64ToArrayBuffer(decryptedData);
 
@@ -186,7 +162,6 @@
       }
 
       encodedFrame.data = newData;
-    }
     controller.enqueue(encodedFrame);
   }
 
@@ -237,18 +212,6 @@
     startToEnd.close();
     hangupButton.disabled = true;
     callButton.disabled = false;
-    console.log(arr1);
-    console.log(arr2);
-  }
-
-  function setCryptoKey(event) {
-    console.log("Setting crypto key to " + cryptoKey.value);
-    currentCryptoKey = cryptoKey.value;
-    if (currentCryptoKey) {
-      banner.innerText = "Encryption is ON";
-    } else {
-      banner.innerText = "Encryption is OFF";
-    }
   }
 
   function toggleMute(event) {
