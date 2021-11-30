@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<!--
+ *  Copyright (c) 2020 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+-->
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta id="theme-color" name="theme-color" content="#ffffff">
+
+    <base target="_blank">
+
+    <title>Peer connection end to end encryption</title>
+
+    <link rel="stylesheet" href="css/main.css"/>
+
+</head>
+
+<body>
+
+<div id="container">
+    </h1>
+    <span id="banner">Encryption is OFF</span>
+    <p>
+      <h2>Sender and receiver</h2>
+      <div id="videos">
+        Sender and receiver<br>
+        <video id="video1" playsinline autoplay muted></video>
+        <video id="video2" playsinline autoplay></video>
+      </div>
+      <br>
+      Crypto key: <input type="text" id="crypto-key">
+    </p>
+    <p>
+      <h2>Middlebox</h2>
+      <div id="monitor">
+        <video id="video-monitor" playsinline autoplay muted></video>
+        Switch audio to middlebox: <input type="checkbox" id="mute-middlebox">
+      </div>
+    </p>
+
+    <div id="buttons">
+        <button id="start">Start</button>
+        <button id="call" disabled>Call</button>
+        <button id="hangup" disabled>Hang Up</button>
+    </div>
+    <div id="status"></div>
+
+</div>
+
+<script src="Lib/crypto-js.js"></script>
+<script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+<script src="js/videopipe.js"></script>
+<script type="module" src="js/main.js" async></script>
+
+</body>
+</html>
