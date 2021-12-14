@@ -25,8 +25,8 @@
     undefined: 1,
   };
 
-  let key = 'ec75109d-bfe2-48';
-  let iv = "KCap6JeLif31Q9xs";
+  // let key = 'ec75109d-bfe2-48';
+  // let iv = "KCap6JeLif31Q9xs";
   let localStream;
   let remoteStream;
 
@@ -68,6 +68,9 @@
     return bytes.buffer;
   }
 
+  const encryptAES = Module.cwrap("encryptAES","string",["string"]);
+  const decryptAES = Module.cwrap("decryptAES","string",["string"]);
+
   async function encodeFunction(encodedFrame, controller) {
       const view = new DataView(encodedFrame.data);
 
@@ -81,18 +84,21 @@
         String.fromCharCode(...new Uint8Array(bufferAfterCutOffset))
       );
 
-      // Mã hoá AES CBC
-      const encryptedData = CryptoJS.AES.encrypt(base64String, key, {
-        iv: CryptoJS.enc.Utf8.parse(iv),
-        mode: CryptoJS.mode.CBC,
-        padding: CryptoJS.pad.Pkcs7,
-      });
+      // const base64String = "hahhahaahahaha";
 
+      // Mã hoá AES CBC
+      // const encryptedData = CryptoJS.AES.encrypt(base64String, key, {
+      //   iv: CryptoJS.enc.Utf8.parse(iv),
+      //   mode: CryptoJS.mode.CBC,
+      //   padding: CryptoJS.pad.Pkcs7,
+      // });
+      const encryptedData = encryptAES(base64String);
+    // if(base64String == decryptedData) console.log(true);
       // const encryptedData = CryptoJS.AES.encrypt(
       //   base64String,
       //   currentCryptoKey
       // );
-
+      // console.log(encryptedData);
 
       const encryptedArrayBuffer = base64ToArrayBuffer(encryptedData);
 
@@ -136,12 +142,13 @@
       //   currentCryptoKey
       // ).toString(CryptoJS.enc.Utf8);
 
-      const decryptedData = CryptoJS.AES.decrypt(base64String, key, {
-        iv: CryptoJS.enc.Utf8.parse(iv),
-        mode: CryptoJS.mode.CBC,
-        padding: CryptoJS.pad.Pkcs7,
-      }).toString(CryptoJS.enc.Utf8);
+      // const decryptedData = CryptoJS.AES.decrypt(base64String, key, {
+      //   iv: CryptoJS.enc.Utf8.parse(iv),
+      //   mode: CryptoJS.mode.CBC,
+      //   padding: CryptoJS.pad.Pkcs7,
+      // }).toString(CryptoJS.enc.Utf8);
 
+      const decryptedData = decryptAES(base64String);
       const decryptedArrayBuffer = base64ToArrayBuffer(decryptedData);
 
       const decryptView = new DataView(decryptedArrayBuffer);
