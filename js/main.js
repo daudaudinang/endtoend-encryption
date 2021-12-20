@@ -9,6 +9,13 @@
 
   const banner = document.querySelector("#banner");
   const muteMiddleBox = document.querySelector("#mute-middlebox");
+  const senderWaveForm = document.querySelector('#senderWaveForm');
+  const receiverWaveForm = document.querySelector('#receiverWaveForm');
+  const monitorWaveForm = document.querySelector('#monitorWaveForm');
+  
+  let senderWaveInstance;
+  let receiverWaveInstance;
+  let monitorWaveInstance;
 
   startButton.onclick = start;
   callButton.onclick = call;
@@ -29,11 +36,17 @@
   // let iv = "KCap6JeLif31Q9xs";
   let localStream;
   let remoteStream;
+  let monitorStream;
 
   let useCryptoOffset = true;
 
   function gotStream(stream) {
     console.log("Received local stream");
+    if(senderWaveInstance) senderWaveInstance.destroyWaveSurfer();
+
+    senderWaveInstance = new instanceWaveSurfer("#senderWaveForm");
+    senderWaveInstance.createWaveSurfer(stream);
+
     video1.srcObject = stream;
     localStream = stream;
     callButton.disabled = false;
@@ -98,7 +111,6 @@
       //   base64String,
       //   currentCryptoKey
       // );
-      // console.log(encryptedData);
 
       const encryptedArrayBuffer = base64ToArrayBuffer(encryptedData);
 
@@ -195,10 +207,19 @@
   function call() {
     callButton.disabled = true;
     hangupButton.disabled = false;
+    video1.muted = true;
+
     console.log("Starting call");
     startToMiddle = new VideoPipe(localStream, true, false, (e) => {
-      // Do not setup the receiver transform.
       videoMonitor.srcObject = e.streams[0];
+      if(!videoMonitor.muted) {
+        destroyAllWaveForm();
+
+        monitorWaveInstance = new instanceWaveSurfer("#monitorWaveForm");
+        monitorWaveInstance.createWaveSurfer(e.streams[0]);
+      } else {
+        monitorStream = e.streams[0];
+      }
     });
     startToMiddle.pc1.getSenders().forEach(setupSenderTransform);
     startToMiddle.negotiate();
@@ -206,6 +227,10 @@
     startToEnd = new VideoPipe(localStream, true, true, (e) => {
       setupReceiverTransform(e.receiver);
       gotRemoteStream(e.streams[0]);
+      destroyAllWaveForm();
+
+      receiverWaveInstance = new instanceWaveSurfer("#receiverWaveForm");
+      receiverWaveInstance.createWaveSurfer(e.streams[0]);
     });
     startToEnd.pc1.getSenders().forEach(setupSenderTransform);
     startToEnd.negotiate();
@@ -214,14 +239,31 @@
   }
 
   function hangup() {
+    video1.muted = false;
     console.log("Ending call");
     startToMiddle.close();
     startToEnd.close();
     hangupButton.disabled = true;
     callButton.disabled = false;
+    destroyAllWaveForm();
   }
 
   function toggleMute(event) {
     video2.muted = muteMiddleBox.checked;
     videoMonitor.muted = !muteMiddleBox.checked;
+    if(muteMiddleBox.checked && callButton.disabled) {
+      destroyAllWaveForm();
+
+      monitorWaveInstance = new instanceWaveSurfer("#monitorWaveForm");
+      monitorWaveInstance.createWaveSurfer(monitorStream);
+    } else {
+      destroyAllWaveForm();
+      receiverWaveInstance = new instanceWaveSurfer("#receiverWaveForm");
+      receiverWaveInstance.createWaveSurfer(remoteStream);
+    }
+  }
+
+  const destroyAllWaveForm = () => {
+    if(monitorWaveInstance) monitorWaveInstance.destroyWaveSurfer();
+    if(receiverWaveInstance) receiverWaveInstance.destroyWaveSurfer();
   }

@@ -1,21 +1,41 @@
-/*
- *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
- *
- *  Use of this source code is governed by a BSD-style license
- *  that can be found in the LICENSE file in the root of the source
- *  tree.
- */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;1,100;1,200;1,300&display=swap');
 
-button {
-  margin: 20px 10px 0 0;
-  width: 100px;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-div#buttons {
-  margin: 0 0 20px 0;
+body {
+  font-family: 'Poppins', sans-serif;
 }
 
-div#status {
+#buttons {
+  position: fixed;
+  right: 100px;
+  top: 50px;
+  display: flex;
+  flex-direction: column;
+}
+
+#buttons button {
+  width: 200px;
+  cursor: pointer;
+  padding: 10px 20px;
+  border: none;
+  outline: none;
+  margin: 10px;
+  background: green;
+  font-size: 20px;
+  color: white;
+  border-radius: 10px;
+}
+
+#buttons button:disabled {
+  background: gray;
+}
+
+#status {
   height: 2em;
   margin: 1em 0 0 0;
 }
@@ -26,8 +46,37 @@ input#audio {
   top: -1px;
 }
 
-video {
-  --width: 45%;
-  width: var(--width);
-  height: calc(var(--width) * 0.75);
+#videos {
+  display: flex;
+  flex-direction:row;
+}
+
+video{
+  width: 100%;
+  height: 100%;
+}
+
+#sender,#receiver,#monitor {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 400px;
+  height: 300px;
+  margin: 20px;
+}
+
+.waveform {
+  right: 0;
+  bottom: 0;
+  position: absolute;
+  width: 100%;
+}
+
+span{
+  font-size: 20px;
+  font-weight: 600;
+}
+
+input {
+   cursor: pointer;
 }

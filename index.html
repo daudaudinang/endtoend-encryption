@@ -25,21 +25,24 @@
 
 <div id="container">
     </h1>
-    <p>
-      <h2>Sender and receiver</h2>
       <div id="videos">
-        Sender and receiver<br>
-        <video id="video1" playsinline autoplay muted></video>
-        <video id="video2" playsinline autoplay></video>
+        <div id="sender">
+          <span>Người gọi</span>
+          <video id="video1" playsinline autoplay muted></video>
+          <div id="senderWaveForm" class="waveform"></div>
+        </div>
+        <div id="receiver">
+          <span>Người nghe</span>
+          <video id="video2" playsinline autoplay></video>
+          <div id="receiverWaveForm" class="waveform"></div>
+        </div>
       </div>
-    </p>
-    <p>
-      <h2>Middlebox</h2>
       <div id="monitor">
+        <span>Nghe lén</span>
+        <label id="switch-audio">Nghe âm thanh ông nghe lén nhận được: <input type="checkbox" id="mute-middlebox"></label>
         <video id="video-monitor" playsinline autoplay muted></video>
-        Switch audio to middlebox: <input type="checkbox" id="mute-middlebox">
+        <div id="monitorWaveForm" class="waveform"></div>
       </div>
-    </p>
 
     <div id="buttons">
         <button id="start">Start</button>
@@ -52,6 +55,8 @@
 
 <!-- <script src="Lib/crypto-js.js"></script> -->
 <script src="Lib/aes.js"></script>
+<script src="Lib/wavesurfer.js"></script>
+<script src="js/createWave.js"></script>
 <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
 <script src="js/videopipe.js"></script>
 <script type="module" src="js/main.js" async></script>
